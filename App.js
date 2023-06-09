@@ -1,24 +1,10 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, Text, TextInput, TouchableWithoutFeedback, Keyboard, Alert, ActivityIndicator, TouchableOpacity, SafeAreaView } from 'react-native';
+import { StyleSheet, View, TextInput, TouchableWithoutFeedback, Keyboard, Alert, ActivityIndicator, TouchableOpacity, SafeAreaView } from 'react-native';
 import { useState, useEffect } from 'react';
 import MapView from 'react-native-maps';
 import { FontAwesome } from '@expo/vector-icons';
-import { FontAwesome5 } from '@expo/vector-icons';
 import * as Location from 'expo-location'
-
-function Button({color, title, icon}) {
-  return(
-    <TouchableOpacity 
-      style={[styles.itemsBoxButton, {backgroundColor: color}]}
-      onPress={null}>
-        <View style={styles.boxView}>
-          <FontAwesome5 name={icon} size={24} color="white" />
-          <View style={{margin: 3}}></View>
-          <Text style={styles.boxText}>{title}</Text>
-        </View>
-    </TouchableOpacity>
-  );
-}
+import Button from './components/Button';
 
 export default function App() {
     const [location, setLocation] = useState(null);
@@ -93,15 +79,15 @@ export default function App() {
               </View>
             </View>
             <View style={styles.itemsBox}>
-              <View style={{justifyContent: 'space-evenly'}}>
+              <View style={styles.column}>
                 <Button color='#ED3131' title='Museus' icon='landmark'></Button>
                 <Button color='#F0DC2B' title='Cultura' icon='theater-masks'></Button>
               </View>
-              <View style={{justifyContent: 'space-evenly'}}>
+              <View style={styles.column}>
                 <Button color='#35E166' title='Parques' icon='tree'></Button>
                 <Button color='#F68E2E' title='Restaurantes' icon='hamburger'></Button>
               </View>
-              <View style={{justifyContent: 'space-evenly'}}>
+              <View style={styles.column}>
                 <Button color='#3B4ACD' title='   Pontos Turísticos' icon='binoculars'></Button>
                 <Button color='#AB42D0' title='Hotéis' icon='bed'></Button>
               </View>
@@ -146,31 +132,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   itemsBox: {
-    backgroundColor: 'blue',
+    backgroundColor: "#fff",
     borderTopLeftRadius: 60,
     borderTopRightRadius: 60,
-    borderBottomLeftRadius: 60,
-    borderBottomRightRadius: 60,
-    flex: 0.5,
+    position: "absolute",
+    width: "100%",
+    bottom: 0,
+    height: "25%",
     flexDirection: 'row',                     
     justifyContent: 'space-evenly',
     alignItems: 'stretch', 
-
   },
-  itemsBoxButton: {
-    alignItems: 'center',
-    justifyContent: 'space-evenly',
-    borderRadius: 5,
-    elevation: 5,
-  },
-  boxText: {
-    color: 'white',
-    fontWeight: 'bold'
-  },
-  boxView: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 90,
-    height: 71,
-  },
+  column: {
+    justifyContent: "space-evenly",
+    marginTop: 5,
+  }
 });
