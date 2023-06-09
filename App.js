@@ -146,16 +146,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   itemsBox: {
-    backgroundColor: 'blue',
-    borderTopLeftRadius: 60,
-    borderTopRightRadius: 60,
-    borderBottomLeftRadius: 60,
-    borderBottomRightRadius: 60,
-    flex: 0.5,
+    backgroundColor: 'white',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
     flexDirection: 'row',                     
     justifyContent: 'space-evenly',
-    alignItems: 'stretch', 
-
+    alignItems: 'stretch',
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    height: '30%'
   },
   itemsBoxButton: {
     alignItems: 'center',
