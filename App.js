@@ -1,7 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, TextInput, TouchableWithoutFeedback, Keyboard, Alert, ActivityIndicator, TouchableOpacity, SafeAreaView } from 'react-native';
-import { useState, useEffect } from 'react';
-import MapView from 'react-native-maps';
+import { StyleSheet, View, Text, Image, TextInput, TouchableWithoutFeedback, Keyboard, Alert, ActivityIndicator, TouchableOpacity, SafeAreaView } from 'react-native';
+import { useState, useEffect, useRef } from 'react';
+import MapView, { Callout, Marker } from 'react-native-maps';
 import { FontAwesome } from '@expo/vector-icons';
 import * as Location from 'expo-location'
 import Button from './components/Button';
@@ -11,6 +11,13 @@ export default function App() {
     const [isLoading, setIsLoading] = useState(true);
     const [showUserLocation, setShowUserLocation] = useState(true)
     const [inputText, setInputText] = useState('');
+    let markerRef = useRef(null);
+
+    useEffect(() => {
+      if (markerRef.current) {
+          markerRef.current.showCallout();
+      }
+    }) //Callout só atualiza com esse use effect
 
     const keyboardDismiss = () => {
       setInputText('')
@@ -61,7 +68,23 @@ export default function App() {
               }}
             style={styles.map}
             showsUserLocation={showUserLocation}
-            />
+            >
+              <Marker
+                coordinate={{
+                  latitude: location.latitude,
+                  longitude: location.longitude,
+                }}
+                image={require('./assets/marcador.png')}
+              >
+                <Callout style={styles.callout}>
+                  <Text style={styles.textCallout}>Titulo do lugar</Text>
+                  <Text style={styles.descriptionCallout}>breve descrição</Text>
+                  <Text>
+                    <Image style={styles.image} source={require('./assets/museuGenerico.jpg')}/>
+                  </Text>
+                </Callout>
+              </Marker>
+            </MapView>
             <View style={styles.overlay}>
               <View style={styles.searchBar}>
                 <TextInput style={styles.searchText}
@@ -162,5 +185,21 @@ const styles = StyleSheet.create({
   column: {
     justifyContent: "space-evenly",
     marginTop: 5,
-  }
+  },
+  callout: {
+    width: 200,
+    height: 250,
+  },
+  textCallout: {
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  descriptionCallout: {
+    fontSize: 12,
+  },
+  image: {
+    width: 100,
+    height: 100,
+    borderRadius: 5,
+  },
 });
