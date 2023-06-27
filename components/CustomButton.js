@@ -2,11 +2,11 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 
 
-function Button({color, title, icon}) {
+function Button({color, title, icon, onPress}) {
   return(
     <TouchableOpacity 
       style={[styles.button, {backgroundColor: color}]}
-      onPress={null}>
+      onPress={onPress}>
         <View style={styles.boxView}>
           <FontAwesome5 name={icon} size={24} color="white" />
           <Text style={styles.boxText}>{title}</Text>
