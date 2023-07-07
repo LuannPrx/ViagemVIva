@@ -1,8 +1,9 @@
-import { StyleSheet, View, TouchableWithoutFeedback, Keyboard, Alert, ActivityIndicator, SafeAreaView} from 'react-native';
-import { useState, useEffect} from 'react';
+import { StyleSheet, View, TouchableWithoutFeedback, Keyboard, Alert, ActivityIndicator } from 'react-native';
+import { useState, useEffect, useRef} from 'react';
 import MapView from 'react-native-maps';
 import * as Location from 'expo-location'
 import ItemsBox from '../components/ItemsBox';
+import MyLocationButton from '../components/MyLocationButton';
 import InterestMarker from '../components/InterestMarker';
 import SearchBar from '../components/SearchBar';
 import LoadingModal from '../components/LoadingModal';
@@ -18,6 +19,7 @@ function MapScreen() {
     const [currentState, setCurrentState] = useState("")
     const interestPoints = museumData
     const setData = useStore((state)=>state.setPlaceData)
+    const mapRef = useRef(MapView); 
 
     const keyboardDismiss = () => {
       Keyboard.dismiss()
@@ -75,6 +77,7 @@ function MapScreen() {
       <TouchableWithoutFeedback onPress={keyboardDismiss}>
           <View style={styles.container}>
             <MapView
+            ref={mapRef}
             provider="google"
             initialRegion={{
                 latitude: location.latitude,
@@ -84,11 +87,13 @@ function MapScreen() {
                 }}
             style={styles.map}
             showsUserLocation={showUserLocation}
+            showsMyLocationButton={false}
             >
               {showMarkers}
             </MapView>
             <View style={styles.overlay}>
               <SearchBar currentState={currentState} changeState={buttonPress}/>
+              <MyLocationButton mapRef={mapRef} latitude={location.latitude} longitude={location.longitude}/>
             </View>
             <ItemsBox buttonPress={buttonPress} setLoad={setAwaitingAPI}/>
             <LoadingModal visible={awaitingAPI} />
@@ -108,9 +113,11 @@ const styles = StyleSheet.create({
   },
   overlay: {
     width: "100%",
+    height: 50,
     position: "absolute",
     top: 50,
-    height: 50,
-    alignItems: "center"
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 6,
   },
 });
