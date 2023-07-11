@@ -2,12 +2,18 @@ import { StyleSheet, View, Dimensions, Animated } from 'react-native';
 import { useEffect, useRef } from 'react';
 import CustomButton from './CustomButton';
 import useStore from '../dataStore';
+import callOpenAI from '../api handlers/apiHandler';
 
-function ItemsBox({buttonPress, setLoad}) {
+function ItemsBox() {
   const windowHeight = Dimensions.get('window').height;
   const animTranslate = useRef(new Animated.Value(0)).current
   const setToggleFunc = useStore((state)=>state.setToggleFunc)
-
+  const currentCity = useStore((state) => state.currentCity)
+  const setCurrentState = useStore((state) => state.setCurrentState)
+  const setLoading = useStore((state) => state.setModalLoading)
+  const setData = useStore((state) => state.setPlaceData)
+  const mapRef = useStore((state) => state.mapRef)
+  
   const toggleItemsBox = (down) => {
     if (down) {
       Animated.timing(animTranslate, {
@@ -29,11 +35,8 @@ function ItemsBox({buttonPress, setLoad}) {
   }, []);
 
   const handlePress = (payload) => {
-    setLoad(true);
-    setTimeout(() => {
-      setLoad(false);
-    }, 7000);
-    buttonPress(payload)
+    setCurrentState(payload)
+    callOpenAI(payload, currentCity, setLoading, setData, mapRef)
     toggleItemsBox(true)
   }
 

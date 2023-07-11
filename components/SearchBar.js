@@ -2,31 +2,52 @@ import { StyleSheet, Text, View, TextInput, TouchableOpacity, Keyboard} from "re
 import { useState } from "react";
 import { FontAwesome5 } from '@expo/vector-icons';
 import useStore from "../dataStore";
+import callOpenAI from '../api handlers/apiHandler';
+import { useNavigation } from "@react-navigation/native";
 
-function SearchBar({currentState, changeState}) {
+function SearchBar({currentState}) {
   const [inputText, setInputText] = useState('');
   const toggleFunc = useStore((state)=>state.toggleFunc)
+  const setState = useStore((state) => state.setCurrentState)
+  const currentCity = useStore((state) => state.currentCity)
+  const setLoading = useStore((state) => state.setModalLoading)
+  const setData = useStore((state) => state.setPlaceData)
+  const mapRef = useStore((state) => state.mapRef)
+  const navigation = useNavigation()
   
   const handleInput = () => {
     console.log(inputText)
+    callOpenAI(inputText, currentCity, setLoading, setData, mapRef)
     Keyboard.dismiss()
+    setState("Search")
+    toggleFunc(true)
   };
 
   const handlePress = () => {
     toggleFunc(false)
-    changeState("")
+    setState("")
+    setInputText("")
   }
 
-  function DisplayBar ({color, icon, label}) {
+  const handleDrawer = () => {
+    navigation.openDrawer()
+  }
+
+  const DisplayBar = ({color, icon, label}) => {
     return (
       <TouchableOpacity style={[styles.searchBar, {backgroundColor: color}]} onPress={handlePress}>
         <View style={styles.displayBar}>
+          <TouchableOpacity style={{marginRight: 10}} onPress={handleDrawer}>
+            <FontAwesome5 name="bars" size={27} color="white" />
+          </TouchableOpacity>
           <FontAwesome5 name={icon} size={38} color="white" />
           <Text style={{color: "#fff", fontWeight: "bold", fontSize: 26, marginLeft: 15}}>{label}</Text>
         </View>
       </TouchableOpacity>
     )
   }
+
+  let [color, label, icon] = Array(3).fill(null)
 
   if (currentState!==""){
     if (currentState === "Museums") {
@@ -53,6 +74,10 @@ function SearchBar({currentState, changeState}) {
       color = '#AB42D0';
       label = 'Hotéis';
       icon = 'bed';
+    } else if (currentState === "Search") {
+      color = '#9222F2';
+      label = `${inputText}`;
+      icon = 'search';
     }
     
     return (
@@ -62,6 +87,9 @@ function SearchBar({currentState, changeState}) {
 
   return (
     <View style={styles.searchBar}>
+      <TouchableOpacity style={{marginLeft: 15, justifyContent: "center", alignItems: "center"}} onPress={handleDrawer}>
+        <FontAwesome5 name="bars" size={27} color="gray" />
+      </TouchableOpacity>
       <TextInput style={styles.searchText}
         autoComplete="street-address" 
         placeholder='O quê vamos descobrir hoje?'
@@ -87,6 +115,7 @@ const styles = StyleSheet.create({
     width: "90%",
     backgroundColor: 'white',
     borderRadius: 30,
+    marginLeft: 8
   },
   displayBar: {
     flexDirection: "row",

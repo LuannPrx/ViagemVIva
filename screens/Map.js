@@ -1,36 +1,53 @@
 import { StyleSheet, View, TouchableWithoutFeedback, Keyboard, Alert, ActivityIndicator } from 'react-native';
 import { useState, useEffect, useRef} from 'react';
+import {GOOGLE_API_KEY} from '@env'
 import MapView from 'react-native-maps';
+import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location'
 import ItemsBox from '../components/ItemsBox';
 import MyLocationButton from '../components/MyLocationButton';
 import InterestMarker from '../components/InterestMarker';
 import SearchBar from '../components/SearchBar';
 import LoadingModal from '../components/LoadingModal';
-import { museumData } from '../data';
 import useStore from '../dataStore';
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 function MapScreen() {
     const [location, setLocation] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [awaitingAPI, setAwaitingAPI] = useState(false)
     const [showUserLocation, setShowUserLocation] = useState(true)
-    const [currentState, setCurrentState] = useState("")
-    const interestPoints = museumData
-    const setData = useStore((state)=>state.setPlaceData)
+    const currentState = useStore((state) => state.currentState)
+    const awaitingAPI = useStore((state) => state.modalLoading)
+    const interestPoints = useStore((state) => state.placeData)
+    const setCurrentCity = useStore((state) => state.setCurrentCity)
+    const setFavorites = useStore((state)=>state.setFavorites)
+    const setMapRef = useStore((state) => state.setMapRef)
+    const destination = useStore((state) => state.destination)
+    const setDestination =useStore((state) => state.setDestination)
+    const setUserLocation = useStore((state) => state.setUserLocation)
     const mapRef = useRef(MapView); 
 
     const keyboardDismiss = () => {
       Keyboard.dismiss()
     };
 
-    const buttonPress = (payload) => {
-      setCurrentState(payload)
+    const onRoutePress = () => {
+      setDestination(false)
     }
 
     useEffect(() => {
-      setData(interestPoints);
+      setMapRef(mapRef)
+      const getFavoriteData = async () => {
+        try {
+          const retrievedData = await AsyncStorage.getItem('favorites')
+          if (retrievedData !== null){
+            setFavorites(JSON.parse(retrievedData))
+          }
+        } catch (e) {
+          console.log(e)
+        }
+      }
+      getFavoriteData();
     }, []);
 
     const renderMarkers = (interestPoints) => {
@@ -42,6 +59,7 @@ function MapScreen() {
           name={point.name}
           description={point.description}
           image={point.img}
+          rating={point.rating}
           type={currentState}
         />
       ));
@@ -61,6 +79,9 @@ function MapScreen() {
         }
         let { coords } = await Location.getCurrentPositionAsync({});
         setLocation(coords);
+        setUserLocation(coords)
+        const userCity = await Location.reverseGeocodeAsync(coords)
+        setCurrentCity(userCity[0].city+" "+userCity[0].region)
         setIsLoading(false)
       })();
     }, []);
@@ -75,29 +96,41 @@ function MapScreen() {
     
     return (
       <TouchableWithoutFeedback onPress={keyboardDismiss}>
-          <View style={styles.container}>
-            <MapView
-            ref={mapRef}
-            provider="google"
-            initialRegion={{
-                latitude: location.latitude,
-                longitude: location.longitude,
-                latitudeDelta: 0.02,
-                longitudeDelta: 0.01,
-                }}
-            style={styles.map}
-            showsUserLocation={showUserLocation}
-            showsMyLocationButton={false}
-            >
-              {showMarkers}
-            </MapView>
-            <View style={styles.overlay}>
-              <SearchBar currentState={currentState} changeState={buttonPress}/>
-              <MyLocationButton mapRef={mapRef} latitude={location.latitude} longitude={location.longitude}/>
-            </View>
-            <ItemsBox buttonPress={buttonPress} setLoad={setAwaitingAPI}/>
-            <LoadingModal visible={awaitingAPI} />
+        <View style={styles.container}>
+          <MapView
+          ref={mapRef}
+          provider="google"
+          initialRegion={{
+              latitude: location.latitude,
+              longitude: location.longitude,
+              latitudeDelta: 0.02,
+              longitudeDelta: 0.01,
+              }}
+          style={styles.map}
+          showsUserLocation={showUserLocation}
+          showsMyLocationButton={false}
+          >
+            {interestPoints.length>0 ? showMarkers : null}
+            {destination ? 
+              <MapViewDirections
+                origin={location}
+                destination={destination}
+                apikey={GOOGLE_API_KEY}
+                strokeWidth={6}
+                strokeColor="#47ADFf"
+                tappable={true}
+                onPress={onRoutePress}
+              />
+              : null
+            }
+          </MapView>
+          <View style={styles.overlay}>
+            <SearchBar currentState={currentState} />
+            <MyLocationButton mapRef={mapRef} latitude={location.latitude} longitude={location.longitude}/>
           </View>
+          <ItemsBox />
+          <LoadingModal visible={awaitingAPI} />
+        </View>
       </TouchableWithoutFeedback>
     );
   }
