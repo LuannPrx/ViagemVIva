@@ -31,6 +31,7 @@ const callOpenAI = async (prompt, location, setLoading, setData, mapRef) => {
   }
 
   setLoading(true)
+  try {
   const response = await openai.createChatCompletion({
     model: "gpt-3.5-turbo",
     messages: [
@@ -64,41 +65,43 @@ const callOpenAI = async (prompt, location, setLoading, setData, mapRef) => {
   let maxLat = -700
   let minLng = 700
   let maxLng = -700
-  try {
-    for (let item of returnedData){
-      await fetch(getPlaceURL(item.name+" "+location))
-      .then(response => response.json())
-      .then(data => {
-        console.log(data.candidates[0])
-        item.location = {
-          "latitude": data.candidates[0].geometry.location.lat,
-          "longitude": data.candidates[0].geometry.location.lng
-        }
-        item.img = getPhotoURL(data.candidates[0].photos[0].photo_reference)
-        item.rating = data.candidates[0].rating
+  for (let item of returnedData){
+    await fetch(getPlaceURL(item.name+" "+location))
+    .then(response => response.json())
+    .then(data => {
+      console.log(data.candidates[0])
+      item.location = {
+        "latitude": data.candidates[0].geometry.location.lat,
+        "longitude": data.candidates[0].geometry.location.lng
+      }
+      item.img = getPhotoURL(data.candidates[0].photos[0].photo_reference)
+      item.rating = data.candidates[0].rating
+      if (!returnedData.some((item) => item.id === data.candidates[0].place_id)){
         item.id = data.candidates[0].place_id
-  
-        if (data.candidates[0].geometry.location.lat > maxLat){
-          maxLat=data.candidates[0].geometry.location.lat
-        }
-        if (data.candidates[0].geometry.location.lat < minLat){
-          minLat=data.candidates[0].geometry.location.lat
-        }
-        if (data.candidates[0].geometry.location.lng > maxLng){
-          maxLng=data.candidates[0].geometry.location.lng
-        }
-        if (data.candidates[0].geometry.location.lng < minLng){
-          minLng=data.candidates[0].geometry.location.lng
-        }
-      })
+      }
       
+      if (data.candidates[0].geometry.location.lat > maxLat){
+        maxLat=data.candidates[0].geometry.location.lat
+      }
+      if (data.candidates[0].geometry.location.lat < minLat){
+        minLat=data.candidates[0].geometry.location.lat
+      }
+      if (data.candidates[0].geometry.location.lng > maxLng){
+        maxLng=data.candidates[0].geometry.location.lng
+      }
+      if (data.candidates[0].geometry.location.lng < minLng){
+        minLng=data.candidates[0].geometry.location.lng
+      }
+    })
     }
+    
     mapRef.current.animateToRegion({
       latitude: (maxLat+minLat)/2,
       longitude: (maxLng+minLng)/2,
       latitudeDelta: maxLat-minLat,
       longitudeDelta: maxLng-minLng,
     });
+
     setData(returnedData)
     console.log(returnedData)
     setLoading(false)
